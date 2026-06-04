@@ -1,0 +1,308 @@
+@page "/checkout"
+@using B2ComputersFrontend.Models
+
+<h4>Checkout</h4>
+
+@if (_step == Step.Cart)
+{
+    <table class="table table-sm table-bordered mb-3">
+        <thead class="table-light">
+            <tr>
+                <th>Product</th>
+                <th>Seller</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var item in Cart)
+            {
+                <tr>
+                    <td>@item.ProductName</td>
+                    <td>@item.SellerName</td>
+                    <td>@item.Price.ToString("C")</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+    <button class="btn btn-primary btn-sm" @onclick="MakeCheckout">Checkout</button>
+}
+
+@if (_step == Step.SelectDelivery)
+{
+    <p class="mb-2">Select delivery method:</p>
+    @foreach (var m in DeliveryMethods)
+    {
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="delivery"
+                   id="dm_@m.Id"
+                   checked="@(_selectedMethod?.Id == m.Id)"
+                   @onchange="() => _selectedMethod = m" />
+            <label class="form-check-label" for="dm_@m.Id">
+                @m.Name @(m.IsInStore ? "(In-store pickup)" : "(Delivery)")
+            </label>
+        </div>
+    }
+
+    @if (_alertMessage != null)
+    {
+        <div class="alert alert-warning mt-2 py-1 px-2 small">@_alertMessage</div>
+    }
+
+    <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary btn-sm" @onclick="ConfirmDelivery">Continue</button>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="() => _step = Step.Cart">Back</button>
+    </div>
+}
+
+@if (_step == Step.PromptMethodChange)
+{
+    <div class="alert alert-info py-2 px-3">
+        <strong>Not all sellers support "@_selectedMethod!.Name".</strong><br />
+        The method "@_suggestedMethod!.Name" is supported by every seller. Switch to it?
+    </div>
+    <div class="d-flex gap-2">
+        <button class="btn btn-success btn-sm" @onclick="AcceptMethodChange">Yes, switch</button>
+        <button class="btn btn-outline-danger btn-sm" @onclick="RejectMethodChange">No</button>
+    </div>
+}
+
+@if (_step == Step.SelectPickup)
+{
+    <p class="mb-2">Select a pickup point for each seller:</p>
+    @foreach (var sellerId in AllSellerIds)
+    {
+        <p class="mb-1 mt-2"><strong>@sellerId</strong></p>
+        @foreach (var pp in PickupPoints.Where(p => p.SellerId == sellerId))
+        {
+            <div class="form-check">
+                <input class="form-check-input" type="radio"
+                       name="pickup_@sellerId"
+                       id="pp_@pp.Id"
+                       checked="@(_selectedPickups.TryGetValue(sellerId, out var sel) && sel.Id == pp.Id)"
+                       @onchange="() => _selectedPickups[sellerId] = pp" />
+                <label class="form-check-label" for="pp_@pp.Id">@pp.Label</label>
+            </div>
+        }
+    }
+
+    @if (_alertMessage != null)
+    {
+        <div class="alert alert-warning mt-2 py-1 px-2 small">@_alertMessage</div>
+    }
+
+    <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary btn-sm" @onclick="ConfirmPickups">Place Order</button>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="() => _step = Step.SelectDelivery">Back</button>
+    </div>
+}
+
+@if (_step == Step.SelectAddress)
+{
+    <p class="mb-2">Select delivery address:</p>
+    @foreach (var a in Addresses)
+    {
+        <div class="form-check">
+            <input class="form-check-input" type="radio" name="addr"
+                   id="addr_@a.Id"
+                   checked="@(_selectedAddress?.Id == a.Id)"
+                   @onchange="() => _selectedAddress = a" />
+            <label class="form-check-label" for="addr_@a.Id">@a.Label</label>
+        </div>
+    }
+
+    @if (_alertMessage != null)
+    {
+        <div class="alert alert-warning mt-2 py-1 px-2 small">@_alertMessage</div>
+    }
+
+    <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary btn-sm" @onclick="ConfirmAddress">Place Order</button>
+        <button class="btn btn-outline-secondary btn-sm" @onclick="() => _step = Step.SelectDelivery">Back</button>
+    </div>
+}
+
+@if (_step == Step.OrderPlaced)
+{
+    <div class="alert alert-success">
+        <strong>Order placed!</strong> It is waiting to be fulfilled by the seller.
+    </div>
+    <button class="btn btn-outline-primary btn-sm" @onclick="Reset">Start over</button>
+}
+
+@if (_step == Step.Ended)
+{
+    <div class="alert alert-secondary">
+        @_alertMessage
+    </div>
+    <button class="btn btn-outline-primary btn-sm" @onclick="Reset">Back to cart</button>
+}
+
+@code {
+    // ── Seed data ────────────────────────────────────────────────────────────
+    private List<CartItem> Cart { get; set; } = new()
+    {
+        new() { ProductName = "Wireless Headphones", SellerName = "TechShop", Price = 89.99m },
+        new() { ProductName = "USB-C Cable",         SellerName = "GadgetHub",  Price = 12.49m }
+    };
+
+    private static readonly List<string> AllSellerIds = new() { "TechShop", "GadgetHub" };
+
+    private List<DeliveryMethod> DeliveryMethods { get; set; } = new()
+    {
+        new() { Id = 1, Name = "Standard Shipping", IsInStore = false,
+                SupportedSellerIds = AllSellerIds },
+        new() { Id = 2, Name = "In-Store Pickup",   IsInStore = true,
+                SupportedSellerIds = AllSellerIds },
+        new() { Id = 3, Name = "Express Courier",   IsInStore = false,
+                SupportedSellerIds = new() { "TechShop" } } // not every seller
+    };
+
+    private List<Address> Addresses { get; set; } = new()
+    {
+        new() { Id = 1, Label = "Home – 12 Maple St" },
+        new() { Id = 2, Label = "Work – 5 Office Blvd" }
+    };
+
+    private List<PickupPoint> PickupPoints { get; set; } = new()
+    {
+        new() { Id = 1, SellerId = "TechShop",  Label = "TechShop – City Centre, 3 High St" },
+        new() { Id = 2, SellerId = "TechShop",  Label = "TechShop – Westgate Mall, Unit 14" },
+        new() { Id = 3, SellerId = "GadgetHub", Label = "GadgetHub – North Quarter, 8 Mill Rd" },
+        new() { Id = 4, SellerId = "GadgetHub", Label = "GadgetHub – East Point, 22 Dock St" },
+    };
+
+    // sellerId → chosen pickup point
+    private Dictionary<string, PickupPoint> _selectedPickups = new();
+
+    // ── State ────────────────────────────────────────────────────────────────
+    private enum Step { Cart, SelectDelivery, PromptMethodChange, SelectPickup, SelectAddress, OrderPlaced, Ended }
+    private Step _step = Step.Cart;
+    private DeliveryMethod? _selectedMethod;
+    private DeliveryMethod? _suggestedMethod;
+    private Address? _selectedAddress;
+    private string? _alertMessage;
+
+    // ── Handlers ─────────────────────────────────────────────────────────────
+
+    private void MakeCheckout()
+    {
+        _alertMessage = null;
+        _selectedMethod = null;
+        _step = Step.SelectDelivery;
+    }
+
+    private void ConfirmDelivery()
+    {
+        _alertMessage = null;
+
+        // 2a – nothing selected
+        if (_selectedMethod == null)
+        {
+            _alertMessage = "Please select a delivery method.";
+            return;
+        }
+
+        var unsupportedSellers = AllSellerIds
+            .Where(s => !_selectedMethod.SupportedSellerIds.Contains(s))
+            .ToList();
+
+        if (unsupportedSellers.Count == 0)
+        {
+            // All sellers support the method → proceed to step 3
+            ProceedToStep3();
+            return;
+        }
+
+        // Some sellers don't support it – look for one that every seller supports
+        _suggestedMethod = DeliveryMethods
+            .FirstOrDefault(m => m.Id != _selectedMethod.Id &&
+                                 AllSellerIds.All(s => m.SupportedSellerIds.Contains(s)));
+
+        if (_suggestedMethod != null)
+        {
+            // 2b – there IS a universally supported alternative
+            _step = Step.PromptMethodChange;
+        }
+        else
+        {
+            // 2c – no method works for every seller
+            End("No delivery method is supported by every seller. Please order separately.");
+        }
+    }
+
+    private void AcceptMethodChange()
+    {
+        // Customer accepted the suggestion → swap and continue
+        _selectedMethod = _suggestedMethod;
+        _suggestedMethod = null;
+        ProceedToStep3();
+    }
+
+    private void RejectMethodChange()
+    {
+        // 2d – customer declined
+        _suggestedMethod = null;
+        End("Please order separately.");
+    }
+
+    private void ProceedToStep3()
+    {
+        if (_selectedMethod!.IsInStore)
+        {
+            // Step 2 – prompt per-seller pickup selection
+            _selectedPickups = new();
+            _alertMessage = null;
+            _step = Step.SelectPickup;
+        }
+        else
+        {
+            _selectedAddress = null;
+            _alertMessage = null;
+            _step = Step.SelectAddress;
+        }
+    }
+
+    private void ConfirmPickups()
+    {
+        _alertMessage = null;
+        var missing = AllSellerIds.Where(s => !_selectedPickups.ContainsKey(s)).ToList();
+        if (missing.Count > 0)
+        {
+            _alertMessage = $"Please select a pickup point for: {string.Join(", ", missing)}.";
+            return;
+        }
+        PlaceOrder();
+    }
+
+    private void ConfirmAddress()
+    {
+        if (_selectedAddress == null)
+        {
+            _alertMessage = "Please select a delivery address.";
+            return;
+        }
+        PlaceOrder();
+    }
+
+    private void PlaceOrder()
+    {
+        // Step 4 – create order
+        _step = Step.OrderPlaced;
+    }
+
+    private void End(string message)
+    {
+        _alertMessage = message;
+        _step = Step.Ended;
+    }
+
+    private void Reset()
+    {
+        _step = Step.Cart;
+        _selectedMethod = null;
+        _suggestedMethod = null;
+        _selectedAddress = null;
+        _selectedPickups = new();
+        _alertMessage = null;
+    }
+}
