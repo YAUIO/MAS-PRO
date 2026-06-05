@@ -1,10 +1,8 @@
 ﻿namespace B2.Data.Models;
 
-public class Location
+public class Category
 {
     public Guid Id { get; init; }
     
     public required string Name { get; set; }
-    
-    public required Address Address { get; set; }
 }

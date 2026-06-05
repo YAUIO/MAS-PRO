@@ -6,6 +6,10 @@ public partial class User
     {
         public Guid Id { get; init; }
         
-        public DateOnly BirthDate { get; set; }
+        public required DateOnly BirthDate { get; set; }
+
+        public virtual ICollection<Order> Orders { get; set; } = [];
+
+        public virtual ICollection<Bookmark> Bookmarks { get; set; } = [];
     }
 }

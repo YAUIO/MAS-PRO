@@ -4,6 +4,6 @@ public partial class User
 {
     public enum UserType
     {
-        None, Customer, Seller
+        Customer, Seller
     }
 }

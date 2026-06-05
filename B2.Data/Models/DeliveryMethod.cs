@@ -1,10 +1,10 @@
 ﻿namespace B2.Data.Models;
 
-public class Location
+public class DeliveryMethod
 {
     public Guid Id { get; init; }
     
     public required string Name { get; set; }
     
-    public required Address Address { get; set; }
+    public required bool IsInStore { get; set; }
 }

@@ -1,42 +1,100 @@
-﻿namespace B2.Data.Models.User;
+﻿using System.Data;
+using System.Diagnostics.CodeAnalysis;
+
+namespace B2.Data.Models.User;
 
 public partial class User
 {
+    private HashSet<UserType> _type = [];
+    
     public Guid Id { get; init; }
     
-    public string FirstName { get; set; }
+    public required string FirstName { get; set; }
     
-    public string LastName { get; set; }
+    public required string LastName { get; set; }
     
-    public string Email { get; set; }
-    
-    public UserType[] Type { get; private set; }
+    public required string Email { get; set; }
+
+    public IReadOnlySet<UserType> Type => _type.AsReadOnly();
 
     public bool IsSeller => Type.Contains(UserType.Seller);
 
     public bool IsCustomer => Type.Contains(UserType.Customer);
 
-    public Seller? SellerObj { get; set; }
+    public Seller? SellerObj { get; private set; }
     
-    public Customer? CustomerObj { get; set; }
+    public Customer? CustomerObj { get; private set; }
+
+    public virtual ICollection<Location> Locations { get; set; } = [];
+
+    [SetsRequiredMembers]
+    public User(string firstName, string lastName, string email, Seller? seller, Customer? customer)
+    {
+        FirstName = firstName;
+        LastName = lastName;
+        Email = email;
+        if (seller is null && customer is null)
+            throw new ConstraintException("Both seller and customer can't be null");
+
+        if (seller is not null)
+            RegisterSeller(seller);
+        
+        if (customer is not null)
+            RegisterCustomer(customer);
+    }
+
+    protected User()
+    {
+        
+    }
 
     public void RegisterCustomer(Customer customer)
     {
+        if (customer == null)
+            throw new ConstraintException("Customer is null");
         
+        if (CustomerObj == null || !_type.Add(UserType.Customer))
+            throw new ConstraintException("Customer already registered");
+
+        CustomerObj = customer;
     }
 
     public void RegisterSeller(Seller seller)
     {
+        if (seller == null)
+            throw new ConstraintException("Seller is null");
         
+        if (SellerObj != null || !_type.Add(UserType.Seller))
+            throw new ConstraintException("Seller already registered");
+
+        SellerObj = seller;
     }
     
     public void UnregisterCustomer(Customer customer)
     {
+        if (SellerObj == null)
+            throw new ConstraintException("Both customer and seller cannot be null");
         
+        if (customer == null)
+            throw new ConstraintException("Customer is null");
+        
+        if (CustomerObj != null || !_type.Remove(UserType.Customer))
+            throw new ConstraintException("Customer already unregistered");
+
+        CustomerObj = null;
     }
 
     public void UnregisterSeller(Seller seller)
     {
+        if (CustomerObj == null)
+            throw new ConstraintException("Both customer and seller cannot be null");
         
+        if (seller == null)
+            throw new ConstraintException("Seller is null");
+        
+        if (SellerObj != null || !_type.Remove(UserType.Seller))
+            throw new ConstraintException("Seller already unregistered");
+
+        SellerObj = null;
     }
 }
