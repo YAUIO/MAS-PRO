@@ -5,9 +5,9 @@ namespace TIN.Core.Dtos;
 
 public class PaginationDto
 {
-    [Range(1, int.MaxValue)] public required int Page { get; set; } = 1;
+    [Range(1, int.MaxValue)] public int Page { get; set; } = 1;
 
-    [Range(1, int.MaxValue)] public required int PageSize { get; set; } = int.MaxValue;
+    [Range(1, int.MaxValue)] public int PageSize { get; set; } = int.MaxValue;
 }
 
 public static class PaginationExtensions
