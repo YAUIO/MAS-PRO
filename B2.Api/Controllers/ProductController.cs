@@ -1,6 +1,6 @@
+using B2.App.Dtos;
 using B2.App.Services;
 using Microsoft.AspNetCore.Mvc;
-using TIN.Core.Dtos;
 
 namespace B2.Api.Controllers;
 

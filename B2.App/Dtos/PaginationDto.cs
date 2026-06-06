@@ -1,7 +1,7 @@
 using System.ComponentModel.DataAnnotations;
 using B2.App.Exceptions;
 
-namespace TIN.Core.Dtos;
+namespace B2.App.Dtos;
 
 public class PaginationDto
 {

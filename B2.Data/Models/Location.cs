@@ -40,5 +40,8 @@ public class LocationConfiguration : IEntityTypeConfiguration<Location>
 
         builder.HasMany(b => b.Sellers)
             .WithMany(b => b.OwnedLocations);
+
+        builder.Navigation(b => b.Address)
+            .AutoInclude();
     }
 }
