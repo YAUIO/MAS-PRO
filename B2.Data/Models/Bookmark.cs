@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace B2.Data.Models;
 
-public class Bookmark
+public class Bookmark : IValidatableObject
 {
     public Guid Id { get; init; }
     
@@ -12,6 +13,13 @@ public class Bookmark
     public required Product Product { get; set; }
     
     public required User.User.Customer Customer { get; set; }
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (Note == null)
+            yield return new ValidationResult("Property cannot be null",
+                [nameof(Note)]);
+    }
 }
 
 public class BookmarkConfiguration : IEntityTypeConfiguration<Bookmark>

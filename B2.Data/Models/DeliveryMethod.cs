@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace B2.Data.Models;
 
-public class DeliveryMethod
+public class DeliveryMethod : IValidatableObject
 {
     public Guid Id { get; init; }
     
@@ -14,6 +15,13 @@ public class DeliveryMethod
     public virtual ICollection<Order> Orders { get; set; }
     
     public virtual ICollection<User.User.Seller> Sellers { get; set; }
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(Name))
+            yield return new ValidationResult("Property cannot be empty",
+                [nameof(Name)]);
+    }
 }
 
 public class DeliveryMethodConfiguration : IEntityTypeConfiguration<DeliveryMethod>

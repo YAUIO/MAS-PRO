@@ -1,9 +1,10 @@
-﻿using System.Data;
+﻿using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Diagnostics.CodeAnalysis;
 
 namespace B2.Data.Models.User;
 
-public partial class User
+public partial class User : IValidatableObject
 {
     private HashSet<UserType> _type = [];
     
@@ -96,5 +97,24 @@ public partial class User
             throw new ConstraintException("Seller already unregistered");
 
         SellerObj = null;
+    }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(FirstName))
+            yield return new ValidationResult("Property cannot be empty",
+                [nameof(FirstName)]);
+        
+        if (string.IsNullOrEmpty(LastName))
+            yield return new ValidationResult("Property cannot be empty",
+                [nameof(LastName)]);
+        
+        if (string.IsNullOrEmpty(Email))
+            yield return new ValidationResult("Property cannot be empty",
+                [nameof(Email)]);
+        
+        if (CustomerObj == null && SellerObj == null)
+            yield return new ValidationResult("Both cannot be null",
+                [nameof(CustomerObj), nameof(SellerObj)]);
     }
 }

@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace B2.Data.Models;
 
-public class Product
+public class Product : IValidatableObject
 {
     public Guid Id { get; init; }
     
@@ -19,13 +20,35 @@ public class Product
 
     public virtual ICollection<Bookmark> Bookmarks { get; set; } = [];
     
-    public class Specification
+    public class Specification : IValidatableObject
     {
         public Guid Id { get; init; }
     
         public required string Name { get; set; }
     
         public required string Value { get; set; }
+        
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (string.IsNullOrEmpty(Name))
+                yield return new ValidationResult("Property cannot be empty",
+                    [nameof(Name)]);
+            
+            if (string.IsNullOrEmpty(Value))
+                yield return new ValidationResult("Property cannot be empty",
+                    [nameof(Value)]);
+        }
+    }
+
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(Name))
+            yield return new ValidationResult("Property cannot be empty",
+                [nameof(Name)]);
+        
+        if (string.IsNullOrEmpty(Description))
+            yield return new ValidationResult("Property cannot be empty",
+                [nameof(Description)]);
     }
 }
 

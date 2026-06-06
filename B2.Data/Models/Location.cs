@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace B2.Data.Models;
 
-public class Location
+public class Location : IValidatableObject
 {
     public Guid Id { get; init; }
     
@@ -12,6 +13,13 @@ public class Location
     public required Address Address { get; set; }
 
     public virtual ICollection<User.User.Seller> Sellers { get; set; } = [];
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (string.IsNullOrEmpty(Name))
+            yield return new ValidationResult("Property cannot be empty",
+                [nameof(Name)]);
+    }
 }
 
 public class LocationConfiguration : IEntityTypeConfiguration<Location>

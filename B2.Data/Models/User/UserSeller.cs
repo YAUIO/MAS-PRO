@@ -32,6 +32,14 @@ public partial class User
             if (SupportedDeliveryMethods.Count == 0)
                 yield return new ValidationResult("Collection cannot be empty",
                     [nameof(SupportedDeliveryMethods)]);
+            
+            if (string.IsNullOrEmpty(Name))
+                yield return new ValidationResult("Property cannot be empty",
+                    [nameof(Name)]);
+            
+            if (string.IsNullOrEmpty(CompanyName))
+                yield return new ValidationResult("Property cannot be empty",
+                    [nameof(CompanyName)]);
         }
     }
 }
