@@ -22,5 +22,7 @@ public partial class User
         public virtual ICollection<Listing> Listings { get; set; } = [];
         
         public virtual ICollection<Location> OwnedLocations { get; set; } = [];
+
+        public virtual ICollection<DeliveryMethod> SupportedDeliveryMethods { get; set; } = [];
     }
 }

@@ -13,6 +13,8 @@ public class Order
     
     public required User.User.Customer Customer { get; set; }
 
+    public required DeliveryMethod DeliveryMethod { get; set; }
+    
     public virtual ICollection<Purchase> Purchases { get; set; } = [];
     
     public void MarkAsAwaitingPickup()
@@ -47,9 +49,15 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired();
 
         builder.HasOne(b => b.Customer)
-            .WithMany(b => b.Orders);
+            .WithMany(b => b.Orders)
+            .IsRequired();
+
+        builder.HasOne(b => b.DeliveryMethod)
+            .WithMany(b => b.Orders)
+            .IsRequired();
 
         builder.HasMany(b => b.Purchases)
-            .WithOne(b => b.Order);
+            .WithOne(b => b.Order)
+            .IsRequired();
     }
 }

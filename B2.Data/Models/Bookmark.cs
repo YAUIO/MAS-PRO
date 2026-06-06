@@ -25,9 +25,9 @@ public class BookmarkConfiguration : IEntityTypeConfiguration<Bookmark>
         builder.Property(b => b.Note)
             .HasMaxLength(200)
             .IsRequired();
-        
-        builder.HasOne(b => b.Product);
-        builder.Property(b => b.Product)
+
+        builder.HasOne(b => b.Product)
+            .WithMany(b => b.Bookmarks)
             .IsRequired();
         
         builder.HasOne(b => b.Customer)

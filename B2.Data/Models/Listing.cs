@@ -12,6 +12,8 @@ public class Listing
     public required Product Product { get; set; }
     
     public required User.User.Seller Seller { get; set; }
+
+    public virtual ICollection<Purchase> Purchases { get; set; } = [];
 }
 
 public class ListingConfiguration : IEntityTypeConfiguration<Listing>
@@ -31,6 +33,11 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
             .IsRequired();
 
         builder.HasOne(b => b.Seller)
-            .WithMany(b => b.Listings);
+            .WithMany(b => b.Listings)
+            .IsRequired();
+
+        builder.HasMany(b => b.Purchases)
+            .WithOne(b => b.Listing)
+            .IsRequired();
     }
 }
