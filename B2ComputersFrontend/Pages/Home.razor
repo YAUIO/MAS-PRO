@@ -1,7 +1,107 @@
-﻿@page "/"
+﻿@using TIN.Core.Dtos
+@using TIN.Core.Dtos.Product
+@using TIN.Frontend.Api
+@using TIN.Frontend.Cart
 
-<PageTitle>Home</PageTitle>
+@inject IProductFetcher ProductFetcher
+@inject ICartService Cart
+@inject StatusService Status
+@page "/"
 
-<h1>Hello, world!</h1>
+<PageTitle>Catalogue</PageTitle>
 
-Welcome to your new app.
+@code{
+    List<GetProductDto>? _products;
+    
+    protected override async Task OnInitializedAsync()
+    {
+        var products = await ProductFetcher.GetAllProductsAsync(_dto);
+
+        if (products != null)
+            _products = [.. products];
+        else
+            _products = [];
+    }
+    
+    async Task AddToCart(GetProductDto product)
+    {
+        await Cart.AddToCart(new()
+        {
+            ProductId = product.ProductId,
+            ImageUri = product.ImageUri,
+            Name = product.Name,
+            UnitPrice = product.Price,
+            Quantity = 1,
+        });
+
+        await Status.SetStatusAsync("Added successfully!", StatusService.StatusType.Success);
+    }
+    
+    PaginationDto _dto = new();
+        
+    async Task Prev()
+    {
+        _dto.Page--;
+        if (_dto.Page <= 1) 
+            _dto.Page = 1;
+        await OnInitializedAsync();
+    }
+
+    async Task Next()
+    {
+        _dto.Page++;
+        await OnInitializedAsync();
+    }
+}
+
+<EditForm Model="_dto">
+    <ChildContent Context="editContext">
+        <button class="btn btn-info" @onclick="Prev"> Previous </button>
+        @_dto.Page
+        <button class="btn btn-info" @onclick="Next"> Next </button> <br/>
+
+        <br/>
+        <select class="form-select form-select-sm w-auto" @bind="_dto.PageSize" @bind:after="OnInitializedAsync">
+            <option value="1">1</option>
+            <option value="5">5</option>
+            <option value="10">10</option>
+            <option value="25">25</option>
+            <option value="25">50</option>
+            <option value="@(int.MaxValue)">All</option> <br/>
+        </select>
+    </ChildContent>
+</EditForm>
+
+@if (_products == null)
+{
+    <p> Loading... </p>
+}
+else if (_products.Count == 0) {
+    <p> No products yet :( </p>
+}
+else
+{
+    
+    <table class="table">
+        <thead>
+        <tr>
+            <th class="w-15">Name</th>
+            <th class="w-15">Image</th>
+            <th>Description</th>
+            <th class="w-15">Price</th>
+        </tr>
+        </thead>
+        
+        <tbody>
+        @foreach (var product in _products)
+        {
+            <tr>
+                <td><a href="product/@product.ProductId" class="h4">@product.Name</a></td>
+                <td><img class="preview-image" alt="Image of @product.Name" src="@product.ImageUri"></td>
+                <td>@(product.Description ?? "No description available.")</td>
+                <td>@product.Price $ <button class="btn btn-info" @onclick="() => AddToCart(product)">Add to cart</button></td>
+            </tr>
+        }
+        </tbody>
+    </table>
+}

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace B2.Data.DbContext;
 
-internal class B2DbContext : Microsoft.EntityFrameworkCore.DbContext
+internal class B2DbContext(DbContextOptions options) : Microsoft.EntityFrameworkCore.DbContext(options)
 {
     public DbSet<User> Users => Set<User>();
     

@@ -1,11 +1,28 @@
+using B2.App.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 
 namespace B2.Api.Middleware;
 
 public class B2ExceptionHandler : IExceptionHandler
 {
-    public ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
+    public async ValueTask<bool> TryHandleAsync(HttpContext httpContext, Exception exception, CancellationToken cancellationToken)
     {
-        throw new NotImplementedException();
+        var (status, title) = exception switch
+        {
+            BadRequestException => (400, "Bad Request"),
+            NotFoundException => (404, "Not Found"),
+            _ => (500, "Internal Server Error"),
+        };
+
+        httpContext.Response.StatusCode = status;
+        await httpContext.Response.WriteAsJsonAsync(new ProblemDetails()
+        {
+            Status = status,
+            Title = title,
+            Detail = exception.Message,
+        }, cancellationToken);
+        
+        return true;
     }
 }
