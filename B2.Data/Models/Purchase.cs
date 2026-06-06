@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace B2.Data.Models;
 
-public class Purchase
+public class Purchase : IValidatableObject
 {
     public Guid Id { get; init; }
     
@@ -12,6 +13,12 @@ public class Purchase
     public required Listing Listing { get; set; }
     
     public required Order Order { get; set; }
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (Amount <= 0)
+            yield return new ValidationResult("Property cannot be <= 0",
+            [nameof(Amount)]);
+    }
 }
 
 public class PurchaseConfiguration : IEntityTypeConfiguration<Purchase>
