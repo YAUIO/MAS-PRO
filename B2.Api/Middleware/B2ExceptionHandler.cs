@@ -1,3 +1,4 @@
+using System.ComponentModel.DataAnnotations;
 using B2.App.Exceptions;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
@@ -10,7 +11,7 @@ public class B2ExceptionHandler : IExceptionHandler
     {
         var (status, title) = exception switch
         {
-            BadRequestException => (400, "Bad Request"),
+            BadRequestException or ValidationException => (400, "Bad Request"),
             NotFoundException => (404, "Not Found"),
             _ => (500, "Internal Server Error"),
         };

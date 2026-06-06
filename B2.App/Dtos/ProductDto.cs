@@ -16,3 +16,15 @@ public class ProductDto
     
     public List<ListingDto> Listings { get; init; } = [];
 }
+
+public static class ProductMapping
+{
+    public static ProductDto ToDto(this Product obj) => new()
+    {
+        Name = obj.Name,
+        Description = obj.Description,
+        Category = obj.Category.Name,
+        Listings = [.. obj.Listings.Select(o => o.ToDto())],
+        Specifications = [.. obj.Specifications.Select(o => o.ToDto())],
+    };
+}

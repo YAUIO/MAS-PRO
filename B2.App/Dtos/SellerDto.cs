@@ -17,3 +17,15 @@ public class SellerDto
 
     public List<DeliveryMethodDto> SupportedDeliveryMethods { get; set; } = [];
 }
+
+public static class SellerMapping
+{
+    public static SellerDto ToDto(this User.Seller obj) => new()
+    {
+        Name = obj.Name,
+        CompanyName = obj.CompanyName,
+        Role = User.Seller.SellerRole.Owner,
+        Listings = [.. obj.Listings.Select(o => o.ToDto())],
+        SupportedDeliveryMethods = [.. obj.SupportedDeliveryMethods.Select(o => o.ToDto())]
+    };
+}
