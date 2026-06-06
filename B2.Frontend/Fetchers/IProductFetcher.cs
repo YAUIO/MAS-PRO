@@ -1,6 +1,6 @@
 using B2.App.Dtos;
 
-namespace B2ComputersFrontend.Fetchers;
+namespace B2.Frontend.Fetchers;
 
 public interface IProductFetcher
 {

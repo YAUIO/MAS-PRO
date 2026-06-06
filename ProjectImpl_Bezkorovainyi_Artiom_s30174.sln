@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B2ComputersFrontend", "B2ComputersFrontend\B2ComputersFrontend.csproj", "{07299E0A-8749-4CD7-ACE5-8BFA25F5669E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B2.Frontend", "B2.Frontend\B2.Frontend.csproj", "{07299E0A-8749-4CD7-ACE5-8BFA25F5669E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "B2.Api", "B2.Api\B2.Api.csproj", "{EEA23386-347D-4AC8-98AB-B9F0D61B2996}"
 EndProject

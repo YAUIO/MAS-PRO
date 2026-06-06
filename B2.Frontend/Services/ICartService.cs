@@ -1,6 +1,6 @@
 using B2.App.Dtos;
 
-namespace B2ComputersFrontend.Services;
+namespace B2.Frontend.Services;
 
 public interface ICartService
 {

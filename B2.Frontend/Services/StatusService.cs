@@ -1,4 +1,4 @@
-namespace B2ComputersFrontend.Services;
+namespace B2.Frontend.Services;
 
 public class StatusService
 {

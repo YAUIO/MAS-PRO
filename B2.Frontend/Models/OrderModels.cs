@@ -1,4 +1,4 @@
-namespace B2ComputersFrontend.Models;
+namespace B2.Frontend.Models;
 
 public class CartItem
 {
@@ -12,7 +12,6 @@ public class DeliveryMethod
     public int Id { get; set; }
     public string Name { get; set; } = "";
     public bool IsInStore { get; set; }
-    // Which seller IDs support this method
     public List<string> SupportedSellerIds { get; set; } = new();
 }
 
