@@ -21,6 +21,7 @@ public static class ProductMapping
 {
     public static ProductDto ToDto(this Product obj) => new()
     {
+        Id = obj.Id,
         Name = obj.Name,
         Description = obj.Description,
         Category = obj.Category.Name,

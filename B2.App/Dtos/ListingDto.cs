@@ -4,6 +4,8 @@ namespace B2.App.Dtos;
 
 public class ListingDto
 {
+    public Guid Id { get; init; }
+    
     public required ProductDto Product { get; init; }
     
     public required SellerDto Seller { get; init; }
@@ -15,6 +17,7 @@ public static class ListingMapping
 {
     public static ListingDto ToDto(this Listing obj) => new()
     {
+        Id = obj.Id,
         Product = obj.Product.ToDto(),
         Seller = obj.Seller.ToDto(),
         Price = obj.Price,

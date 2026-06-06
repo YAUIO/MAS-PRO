@@ -1,4 +1,3 @@
-using B2.Data.Models;
 using B2.Data.Models.User;
 
 namespace B2.App.Dtos;
@@ -22,6 +21,7 @@ public static class SellerMapping
 {
     public static SellerDto ToDto(this User.Seller obj) => new()
     {
+        Id = obj.Id,
         Name = obj.Name,
         CompanyName = obj.CompanyName,
         Role = User.Seller.SellerRole.Owner,
