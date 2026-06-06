@@ -60,6 +60,9 @@ public class ProductConfiguration : IEntityTypeConfiguration<Product>
                 .IsRequired();
         });
 
+        builder.Navigation(b => b.Listings)
+            .AutoInclude();
+
         builder.HasOne(b => b.Category)
             .WithMany(b => b.Products)
             .IsRequired();

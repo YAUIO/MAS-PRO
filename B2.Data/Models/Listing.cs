@@ -32,9 +32,15 @@ public class ListingConfiguration : IEntityTypeConfiguration<Listing>
             .WithMany(b => b.Listings)
             .IsRequired();
 
+        builder.Navigation(b => b.Product)
+            .AutoInclude();
+
         builder.HasOne(b => b.Seller)
             .WithMany(b => b.Listings)
             .IsRequired();
+        
+        builder.Navigation(b => b.Seller)
+            .AutoInclude();
 
         builder.HasMany(b => b.Purchases)
             .WithOne(b => b.Listing)

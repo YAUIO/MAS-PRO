@@ -1,18 +1,19 @@
-﻿@using TIN.Core.Dtos
-@using TIN.Core.Dtos.Product
-@using TIN.Frontend.Api
-@using TIN.Frontend.Cart
-
-@inject IProductFetcher ProductFetcher
+﻿@inject IProductFetcher ProductFetcher
 @inject ICartService Cart
 @inject StatusService Status
 @page "/"
+@using B2.App.Dtos
+@using B2ComputersFrontend.Fetchers
+@using B2ComputersFrontend.Services
+@using TIN.Core.Dtos
 
 <PageTitle>Catalogue</PageTitle>
 
 @code{
-    List<GetProductDto>? _products;
-    
+    List<ProductDto>? _products;
+
+    ProductDto? _selectedProduct;
+
     protected override async Task OnInitializedAsync()
     {
         var products = await ProductFetcher.GetAllProductsAsync(_dto);
@@ -22,27 +23,20 @@
         else
             _products = [];
     }
-    
-    async Task AddToCart(GetProductDto product)
+
+    async Task AddToCart(ListingDto product)
     {
-        await Cart.AddToCart(new()
-        {
-            ProductId = product.ProductId,
-            ImageUri = product.ImageUri,
-            Name = product.Name,
-            UnitPrice = product.Price,
-            Quantity = 1,
-        });
+        await Cart.AddToCart(product);
 
         await Status.SetStatusAsync("Added successfully!", StatusService.StatusType.Success);
     }
-    
+
     PaginationDto _dto = new();
-        
+
     async Task Prev()
     {
         _dto.Page--;
-        if (_dto.Page <= 1) 
+        if (_dto.Page <= 1)
             _dto.Page = 1;
         await OnInitializedAsync();
     }
@@ -52,13 +46,73 @@
         _dto.Page++;
         await OnInitializedAsync();
     }
+
+    void UpdateSelected(ProductDto dto)
+    {
+        _selectedProduct = _selectedProduct == dto ? null : dto;
+    }
+
+    RenderFragment DisplayProductsTable => @<table class="table">
+                                               <thead>
+                                               <tr>
+                                                   <th class="w-15">Name</th>
+                                                   <th>Category</th>
+                                                   <th class="w-15">Price</th>
+                                               </tr>
+                                               </thead>
+
+                                               <tbody>
+                                               @foreach (var product in _products)
+                                               {
+                                                   <tr>
+                                                       <td>
+                                                           <a class="h4">@product.Name</a></td>
+                                                       <td>@(string.IsNullOrEmpty(product.Description) ? "No description available." : product.Description)</td>
+                                                       <td>@product.Category $
+                                                           <button class="btn btn-info"
+                                                                   @onclick="() => UpdateSelected(product)">
+                                                               View listings
+                                                           </button>
+                                                       </td>
+                                                   </tr>
+                                               }
+                                               </tbody>
+                                           </table>;
+
+    RenderFragment DisplayListings => @<table class="table">
+                                               <thead>
+                                               <tr>
+                                                   <th class="w-15">Seller name</th>
+                                                   <th class="w-auto">Delivery methods</th>
+                                                   <th class="w-15">Price</th>
+                                               </tr>
+                                               </thead>
+
+                                               <tbody>
+                                               @foreach (var listing in _selectedProduct.Listings)
+                                               {
+                                                   <tr>
+                                                       <td>
+                                                           <a class="h4">@listing.Seller.Name</a></td>
+                                                       <td>@(string.Join(", ", listing.Seller.SupportedDeliveryMethods))</td>
+                                                       <td>@listing.Price $
+                                                           <button class="btn btn-info"
+                                                                   @onclick="() => AddToCart(listing)">Add to cart
+                                                           </button>
+                                                       </td>
+                                                   </tr>
+                                               }
+                                               </tbody>
+                                           </table>;
+
 }
 
 <EditForm Model="_dto">
     <ChildContent Context="editContext">
-        <button class="btn btn-info" @onclick="Prev"> Previous </button>
+        <button class="btn btn-info" @onclick="Prev"> Previous</button>
         @_dto.Page
-        <button class="btn btn-info" @onclick="Next"> Next </button> <br/>
+        <button class="btn btn-info" @onclick="Next"> Next</button>
+        <br/>
 
         <br/>
         <select class="form-select form-select-sm w-auto" @bind="_dto.PageSize" @bind:after="OnInitializedAsync">
@@ -67,7 +121,8 @@
             <option value="10">10</option>
             <option value="25">25</option>
             <option value="25">50</option>
-            <option value="@(int.MaxValue)">All</option> <br/>
+            <option value="@(int.MaxValue)">All</option>
+            <br/>
         </select>
     </ChildContent>
 </EditForm>
@@ -76,32 +131,25 @@
 {
     <p> Loading... </p>
 }
-else if (_products.Count == 0) {
+else if (_products.Count == 0)
+{
     <p> No products yet :( </p>
 }
 else
 {
-    
-    <table class="table">
-        <thead>
-        <tr>
-            <th class="w-15">Name</th>
-            <th class="w-15">Image</th>
-            <th>Description</th>
-            <th class="w-15">Price</th>
-        </tr>
-        </thead>
-        
-        <tbody>
-        @foreach (var product in _products)
-        {
+    if (_selectedProduct != null)
+    {
+        <table class="table">
+            <tbody>
             <tr>
-                <td><a href="product/@product.ProductId" class="h4">@product.Name</a></td>
-                <td><img class="preview-image" alt="Image of @product.Name" src="@product.ImageUri"></td>
-                <td>@(product.Description ?? "No description available.")</td>
-                <td>@product.Price $ <button class="btn btn-info" @onclick="() => AddToCart(product)">Add to cart</button></td>
+                <td>@DisplayProductsTable</td>
+                <td>@DisplayListings</td>
             </tr>
-        }
-        </tbody>
-    </table>
+            </tbody>
+        </table>
+    }
+    else
+    {
+        @DisplayProductsTable;
+    }
 }

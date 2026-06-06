@@ -1,4 +1,7 @@
-﻿@inherits LayoutComponentBase
+﻿@using B2ComputersFrontend.Services
+@inherits LayoutComponentBase
+@inject StatusService StatusService
+
 <div class="page">
     <div class="sidebar">
         <NavMenu/>
@@ -10,7 +13,25 @@
         </div>
 
         <article class="content px-4">
+            @if (!string.IsNullOrEmpty(StatusService.Status))
+            {
+                <div class="alert @StatusService.CssClass mt-2">@StatusService.Status</div>
+            }
+            
             @Body
         </article>
     </main>
 </div>
+
+@code
+{
+    protected override void OnInitialized()
+    {
+        StatusService.OnChange += StateHasChanged;
+    }
+    
+    public void Dispose()
+    {
+        StatusService.OnChange -= StateHasChanged;
+    }
+}
