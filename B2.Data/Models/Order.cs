@@ -1,9 +1,10 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace B2.Data.Models;
 
-public class Order
+public class Order : IValidatableObject
 {
     public Guid Id { get; init; }
     
@@ -30,6 +31,17 @@ public class Order
     public enum OrderStatus
     {
         Created, AwaitingPickup, Delivered
+    }
+    
+    public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+    {
+        if (Purchases.Count == 0)
+            yield return new ValidationResult("Collection cannot be empty",
+                [nameof(Purchases)]);
+        
+        if (PlacedAt > DateTime.Now)
+            yield return new ValidationResult("Date cannot be in the future",
+                [nameof(PlacedAt)]);
     }
 }
 
@@ -59,5 +71,8 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
         builder.HasMany(b => b.Purchases)
             .WithOne(b => b.Order)
             .IsRequired();
+        
+        builder.Navigation(b => b.Purchases)
+            .AutoInclude();
     }
 }

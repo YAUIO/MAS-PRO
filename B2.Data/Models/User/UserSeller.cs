@@ -1,8 +1,10 @@
-﻿namespace B2.Data.Models.User;
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace B2.Data.Models.User;
 
 public partial class User
 {
-    public class Seller
+    public class Seller : IValidatableObject
     {
         public enum SellerRole
         {
@@ -22,7 +24,14 @@ public partial class User
         public virtual ICollection<Listing> Listings { get; set; } = [];
         
         public virtual ICollection<Location> OwnedLocations { get; set; } = [];
-
+        
         public virtual ICollection<DeliveryMethod> SupportedDeliveryMethods { get; set; } = [];
+
+        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
+        {
+            if (SupportedDeliveryMethods.Count == 0)
+                yield return new ValidationResult("Collection cannot be empty",
+                    [nameof(SupportedDeliveryMethods)]);
+        }
     }
 }

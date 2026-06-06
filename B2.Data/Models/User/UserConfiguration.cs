@@ -56,6 +56,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
             s.Property(b => b.Role)
                 .IsRequired();
+
+            s.Navigation(b => b.SupportedDeliveryMethods)
+                .AutoInclude();
         });
 
         builder.Ignore(b => b.IsCustomer);
