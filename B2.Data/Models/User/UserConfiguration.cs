@@ -59,6 +59,9 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
 
             s.Navigation(b => b.SupportedDeliveryMethods)
                 .AutoInclude();
+
+            s.Navigation(b => b.OwnedLocations)
+                .AutoInclude();
         });
 
         builder.Ignore(b => b.IsCustomer);

@@ -26,7 +26,7 @@
 
     async Task AddToCart(ListingDto product)
     {
-        await Cart.AddToCart(product);
+        await Cart.AddToCartAsync(product);
 
         await Status.SetStatusAsync("Added successfully!", StatusService.StatusType.Success);
     }

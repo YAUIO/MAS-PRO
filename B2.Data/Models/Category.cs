@@ -9,8 +9,8 @@ public class Category : IValidatableObject
     public Guid Id { get; init; }
     
     public required string Name { get; set; }
-    
-    public virtual ICollection<Product> Products { get; set; }
+
+    public virtual ICollection<Product> Products { get; set; } = [];
     
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {

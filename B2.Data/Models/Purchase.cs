@@ -12,7 +12,7 @@ public class Purchase : IValidatableObject
 
     public required Listing Listing { get; set; }
     
-    public required Order Order { get; set; }
+    public Order Order { get; set; }
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (Amount <= 0)
