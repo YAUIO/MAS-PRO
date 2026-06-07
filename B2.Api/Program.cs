@@ -13,6 +13,8 @@ builder.Services.AddExceptionHandler<B2ExceptionHandler>();
 builder.Services.AddProblemDetails();
 builder.Services.AddControllers();
 
+builder.WebHost.UseUrls(builder.Configuration["applicationUrl"]!);
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

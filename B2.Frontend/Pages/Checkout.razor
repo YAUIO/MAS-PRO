@@ -220,13 +220,13 @@
 
     private async Task Increment(CartItem item)
     {
-        await Cart.AddToCartAsync(item.Product);
+        await Cart.AddToCartAsync(item.Product, item.SellerId);
         _items = await Cart.GetCartAsync();
     }
 
     private async Task Decrement(CartItem item)
     {
-        await Cart.DeleteFromCart(item.Product);
+        await Cart.DeleteFromCart(item.Product, item.SellerId);
         _items = await Cart.GetCartAsync();
     }
 

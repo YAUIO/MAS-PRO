@@ -9,17 +9,19 @@ public class CartService(IJSRuntime js) : ICartService
 {
     private const string StorageKey = "Cart";
 
-    public async Task AddToCartAsync(ListingDto dto)
+    public async Task AddToCartAsync(ListingDto dto, Guid sellerId)
     {
         var cart = await GetCartAsync();
         
-        var item = cart.FirstOrDefault(p => p.Product.Id == dto.ProductId);
+        var item = cart.FirstOrDefault(p => p.Product.ProductId == dto.ProductId && sellerId == p.SellerId);
         
         if (item == null)
         {
             item = new()
             {
+                SellerId = sellerId,
                 Product = dto,
+                Amount = 1
             };
         }
         else
@@ -33,11 +35,11 @@ public class CartService(IJSRuntime js) : ICartService
         await WriteToStorage(cart);
     }
     
-    public async Task DeleteFromCart(ListingDto dto)
+    public async Task DeleteFromCart(ListingDto dto, Guid sellerId)
     {
         var cart = await GetCartAsync();
         
-        var item = cart.FirstOrDefault(p => p.Product.Id == dto.ProductId);
+        var item = cart.FirstOrDefault(p => p.Product.ProductId == dto.ProductId && sellerId == p.SellerId);
         
         if (item == null)
         {

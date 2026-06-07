@@ -24,9 +24,9 @@
             _products = [];
     }
 
-    async Task AddToCart(ListingDto product)
+    async Task AddToCart(ListingDto product, Guid sellerId)
     {
-        await Cart.AddToCartAsync(product);
+        await Cart.AddToCartAsync(product, sellerId);
 
         await Status.SetStatusAsync("Added successfully!", StatusService.StatusType.Success);
     }
@@ -58,6 +58,7 @@
                                                    <th class="w-15">Name</th>
                                                    <th>Category</th>
                                                    <th class="w-15">Price</th>
+                                                   <th class="w-15"></th>
                                                </tr>
                                                </thead>
 
@@ -68,12 +69,11 @@
                                                        <td>
                                                            <a class="h4">@product.Name</a></td>
                                                        <td>@(string.IsNullOrEmpty(product.Description) ? "No description available." : product.Description)</td>
-                                                       <td>@product.Category $
-                                                           <button class="btn btn-info"
+                                                       <td>@product.Category</td>
+                                                       <td><button class="btn btn-info"
                                                                    @onclick="() => UpdateSelected(product)">
-                                                               View listings
-                                                           </button>
-                                                       </td>
+                                                           View listings
+                                                       </button></td>
                                                    </tr>
                                                }
                                                </tbody>
@@ -94,10 +94,10 @@
                                                    <tr>
                                                        <td>
                                                            <a class="h4">@listing.Seller.Name</a></td>
-                                                       <td>@(string.Join(", ", listing.Seller.SupportedDeliveryMethods))</td>
+                                                       <td>@(string.Join(", ", listing.Seller.SupportedDeliveryMethods.Select(d => $"{d.Name}")))</td>
                                                        <td>@listing.Price $
-                                                           <button class="btn btn-info"
-                                                                   @onclick="() => AddToCart(listing)">Add to cart
+                                                           <button class="btn btn-success"
+                                                                   @onclick="() => AddToCart(listing, listing.Seller.Id)">Add to cart
                                                            </button>
                                                        </td>
                                                    </tr>
@@ -121,7 +121,7 @@
             <option value="10">10</option>
             <option value="25">25</option>
             <option value="25">50</option>
-            <option value="@(int.MaxValue)">All</option>
+            <option value="0">All</option>
             <br/>
         </select>
     </ChildContent>

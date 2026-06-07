@@ -5,9 +5,9 @@ namespace B2.Frontend.Services;
 
 public interface ICartService
 {
-    Task AddToCartAsync(ListingDto dto);
+    Task AddToCartAsync(ListingDto dto, Guid sellerId);
 
-    Task DeleteFromCart(ListingDto dto);
+    Task DeleteFromCart(ListingDto dto, Guid sellerId);
 
     Task ClearCart();
 
