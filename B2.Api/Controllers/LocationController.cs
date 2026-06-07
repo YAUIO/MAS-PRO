@@ -5,12 +5,12 @@ namespace B2.Api.Controllers;
 
 [ApiController]
 [Route("locations")]
-public class LocationController(ILocationService service) : ControllerBase
+public class LocationController(ILocationService service, IConfiguration cfg) : ControllerBase
 {
-    [HttpGet("{userId:guid}")]
-    public async Task<IActionResult> GetUserLocations(Guid userId)
+    [HttpGet]
+    public async Task<IActionResult> GetUserLocations()
     {
-        var locations = await service.GetAllUserLocationsAsync(userId);
+        var locations = await service.GetAllUserLocationsAsync(Guid.Parse(cfg["userId"]!));
         return Ok(locations);
     }
     

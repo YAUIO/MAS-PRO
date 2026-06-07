@@ -5,6 +5,4 @@ namespace B2.Data.Repositories;
 public interface IProductRepository
 {
     Task<List<Product>> GetAllProductsAsync();
-    
-    Task<Product?> GetProductByIdAsync();
 }

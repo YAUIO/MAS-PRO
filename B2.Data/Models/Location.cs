@@ -14,6 +14,8 @@ public class Location : IValidatableObject
 
     public virtual ICollection<User.User.Seller> Sellers { get; set; } = [];
     
+    public virtual ICollection<Order> Orders { get; set; } = [];
+    
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
         if (string.IsNullOrEmpty(Name))

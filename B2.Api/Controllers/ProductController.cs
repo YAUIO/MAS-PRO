@@ -8,9 +8,14 @@ namespace B2.Api.Controllers;
 [Route("products")]
 public class ProductController(IProductService service) : ControllerBase
 {
-    [HttpGet]
-    public async Task<IActionResult> GetAllProducts([FromBody] PaginationDto dto)
+    [HttpGet("{pageSize:int}/{page:int}")]
+    public async Task<IActionResult> GetAllProducts(int pageSize, int page)
     {
+        var dto = new PaginationDto()
+        {
+            Page = page,
+            PageSize = pageSize,
+        };
         var products = await service.GetAllProductsAsync(dto);
         return Ok(products);
     }

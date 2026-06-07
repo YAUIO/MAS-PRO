@@ -8,7 +8,7 @@ namespace B2.Api.Controllers;
 [Route("orders")]
 public class OrderController(IOrderService service) : ControllerBase
 {
-    [HttpGet]
+    [HttpPost]
     public async Task<IActionResult> CreateOrder([FromBody] CreateOrderDto dto)
     {
         await service.CreateOrderAsync(dto);

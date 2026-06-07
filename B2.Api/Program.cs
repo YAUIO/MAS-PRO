@@ -26,4 +26,6 @@ app.UseHttpsRedirection();
 
 app.MapControllers();
 
+app.Services.EnsureDbCreated();
+
 await app.RunAsync();

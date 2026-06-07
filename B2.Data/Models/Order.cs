@@ -16,6 +16,8 @@ public class Order : IValidatableObject
 
     public required DeliveryMethod DeliveryMethod { get; set; }
     
+    public required Location Location { get; set; }
+    
     public virtual ICollection<Purchase> Purchases { get; set; } = [];
     
     public void MarkAsAwaitingPickup()
@@ -61,6 +63,10 @@ public class OrderConfiguration : IEntityTypeConfiguration<Order>
             .IsRequired();
 
         builder.HasOne(b => b.Customer)
+            .WithMany(b => b.Orders)
+            .IsRequired();
+
+        builder.HasOne(b => b.Location)
             .WithMany(b => b.Orders)
             .IsRequired();
 

@@ -4,5 +4,5 @@ namespace B2.App.Services;
 
 public interface IProductService
 {
-    Task<ProductDto> GetAllProductsAsync(PaginationDto dto);
+    Task<List<ProductDto>> GetAllProductsAsync(PaginationDto dto);
 }

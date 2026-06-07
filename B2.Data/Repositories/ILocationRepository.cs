@@ -7,4 +7,6 @@ public interface ILocationRepository
     Task<List<Location>> GetUserLocations(Guid userId);
 
     Task<List<Location>> GetSellerPickupPoints(Guid sellerId);
+
+    Task<Location?> GetLocationByIdAsync(Guid id);
 }
