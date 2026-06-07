@@ -15,10 +15,12 @@ public static class DataConfigurationExtensions
         services.AddScoped<IDeliveryMethodRepository, DeliveryMethodRepository>();
         services.AddScoped<IListingRepository, ListingRepository>();
         services.AddScoped<IUserRepository, UserRepository>();
+
+        services.AddScoped<IUnitOfWork, UnitOfWork>();
         
         services.AddDbContext<B2DbContext>(options =>
         {
-            options.UseSqlite("../../b2.db");
+            options.UseSqlite("Data Source=../b2.db");
         });
         return services;
     }

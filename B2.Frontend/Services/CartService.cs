@@ -13,7 +13,7 @@ public class CartService(IJSRuntime js) : ICartService
     {
         var cart = await GetCartAsync();
         
-        var item = cart.FirstOrDefault(p => p.Product.Id == dto.Product.Id);
+        var item = cart.FirstOrDefault(p => p.Product.Id == dto.ProductId);
         
         if (item == null)
         {
@@ -37,7 +37,7 @@ public class CartService(IJSRuntime js) : ICartService
     {
         var cart = await GetCartAsync();
         
-        var item = cart.FirstOrDefault(p => p.Product.Id == dto.Product.Id);
+        var item = cart.FirstOrDefault(p => p.Product.Id == dto.ProductId);
         
         if (item == null)
         {

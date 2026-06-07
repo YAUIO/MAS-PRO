@@ -8,6 +8,7 @@ public class ProductService(IProductRepository repo) : IProductService
     public async Task<List<ProductDto>> GetAllProductsAsync(PaginationDto dto)
     {
         var products = await repo.GetAllProductsAsync();
-        return [.. products.Select(p => p.ToDto())];
+        List<ProductDto> list = [.. products.Select(p => p.ToDto())];
+        return [.. list.Paginate(dto)];
     }
 }

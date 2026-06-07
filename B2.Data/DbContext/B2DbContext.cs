@@ -59,7 +59,8 @@ public partial class B2DbContext(DbContextOptions options) : Microsoft.EntityFra
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
+        modelBuilder.Ignore<User.Customer>();
+        modelBuilder.Ignore<User.Seller>();
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AddressConfiguration).Assembly);
-        modelBuilder.ApplyConfigurationsFromAssembly(typeof(UserConfiguration).Assembly);
     }
 }

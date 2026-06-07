@@ -11,6 +11,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddExceptionHandler<B2ExceptionHandler>();
 
 builder.Services.AddProblemDetails();
+builder.Services.AddControllers();
 
 var app = builder.Build();
 
@@ -19,6 +20,13 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
 }
+
+app.UseCors(cfg =>
+{
+    cfg.AllowAnyHeader();
+    cfg.AllowAnyMethod();
+    cfg.AllowAnyOrigin();
+});
 
 app.UseExceptionHandler();
 

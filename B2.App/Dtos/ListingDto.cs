@@ -6,7 +6,7 @@ public class ListingDto
 {
     public Guid Id { get; init; }
     
-    public required ProductDto Product { get; init; }
+    public required Guid ProductId { get; init; }
     
     public required SellerDto Seller { get; init; }
     
@@ -15,10 +15,10 @@ public class ListingDto
 
 public static class ListingMapping
 {
-    public static ListingDto ToDto(this Listing obj) => new()
+    public static ListingDto ToDto(this Listing obj, ProductDto? dto = null) => new()
     {
         Id = obj.Id,
-        Product = obj.Product.ToDto(),
+        ProductId = dto?.Id ?? obj.Product.ToDto().Id,
         Seller = obj.Seller.ToDto(),
         Price = obj.Price,
     };

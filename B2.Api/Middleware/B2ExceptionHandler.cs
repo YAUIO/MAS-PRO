@@ -24,6 +24,9 @@ public class B2ExceptionHandler : IExceptionHandler
             Detail = exception.Message,
         }, cancellationToken);
         
-        return true;
+        if (status != 500)
+            return true;
+
+        return false;
     }
 }

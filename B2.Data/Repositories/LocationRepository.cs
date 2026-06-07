@@ -16,7 +16,9 @@ public class LocationRepository(B2DbContext context) : ILocationRepository
 
     public async Task<List<Location>> GetSellerPickupPoints(Guid sellerId)
     {
-        return await context.Sellers
+        return await context.Users
+            .Select(u => u.SellerObj)
+            .Where(s => s != null)
             .Where(u => u.Id == sellerId)
             .SelectMany(u => u.OwnedLocations)
             .ToListAsync();

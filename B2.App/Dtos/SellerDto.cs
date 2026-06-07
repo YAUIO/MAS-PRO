@@ -12,8 +12,6 @@ public class SellerDto
         
     public required User.Seller.SellerRole Role { get; set; }
 
-    public List<ListingDto> Listings { get; set; } = [];
-
     public List<DeliveryMethodDto> SupportedDeliveryMethods { get; set; } = [];
 
     public List<LocationDto> PickupPoints { get; set; } = [];
@@ -21,14 +19,17 @@ public class SellerDto
 
 public static class SellerMapping
 {
-    public static SellerDto ToDto(this User.Seller obj) => new()
+    public static SellerDto ToDto(this User.Seller obj)
     {
-        Id = obj.Id,
-        Name = obj.Name,
-        CompanyName = obj.CompanyName,
-        Role = User.Seller.SellerRole.Owner,
-        Listings = [.. obj.Listings.Select(o => o.ToDto())],
-        SupportedDeliveryMethods = [.. obj.SupportedDeliveryMethods.Select(o => o.ToDto())],
-        PickupPoints = [.. obj.OwnedLocations.Select(l => l.ToDto())]
-    };
+        var dto = new SellerDto()
+        {
+            Id = obj.Id,
+            Name = obj.Name,
+            CompanyName = obj.CompanyName,
+            Role = User.Seller.SellerRole.Owner,
+            SupportedDeliveryMethods = [.. obj.SupportedDeliveryMethods.Select(o => o.ToDto())],
+            PickupPoints = [.. obj.OwnedLocations.Select(l => l.ToDto())]
+        };
+        return dto;
+    }
 }

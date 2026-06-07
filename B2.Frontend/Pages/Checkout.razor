@@ -7,6 +7,7 @@
 @inject ICartService Cart
 @inject IOrderFetcher OrderFetcher
 @inject ILocationFetcher Locations
+@inject IProductFetcher ProductFetcher
 @inject StatusService StatusService
 
 <h4>Checkout</h4>
@@ -15,120 +16,204 @@
 {
     <table class="table table-sm table-bordered mb-3">
         <thead class="table-light">
-            <tr><th>Product</th><th>Seller</th><th>Qty</th><th>Price</th></tr>
+        <tr>
+            <th>Product</th>
+            <th>Seller</th>
+            <th>Qty</th>
+            <th>Price</th>
+        </tr>
         </thead>
+
         <tbody>
-            @foreach (var item in _items)
-            {
-                <tr>
-                    <td>@item.Product.Product.Name</td>
-                    <td>@item.Product.Seller.CompanyName</td>
-                    <td>
-                        <div class="d-flex align-items-center gap-1">
-                            <button class="btn btn-outline-secondary btn-sm py-0 px-1" @onclick="() => Decrement(item)">−</button>
-                            <span>@item.Amount</span>
-                            <button class="btn btn-outline-secondary btn-sm py-0 px-1" @onclick="() => Increment(item)">+</button>
-                        </div>
-                    </td>
-                    <td>@((item.Product.Price * item.Amount).ToString("C"))</td>
-                </tr>
-            }
-        </tbody>
-        <tfoot>
+        @foreach (var item in _items)
+        {
             <tr>
-                <td colspan="3" class="text-end fw-bold">Total</td>
-                <td class="fw-bold">@(_items.Sum(i => i.Product.Price * i.Amount).ToString("C"))</td>
+                <td>@_products.Single(p => p.Id == item.Product.ProductId).Name</td>
+                <td>@item.Product.Seller.CompanyName</td>
+
+                <td>
+                    <div class="d-flex align-items-center gap-1">
+                        <button class="btn btn-outline-secondary btn-sm py-0 px-1"
+                                @onclick="() => Decrement(item)">
+                            −
+                        </button>
+
+                        <span>@item.Amount</span>
+
+                        <button class="btn btn-outline-secondary btn-sm py-0 px-1"
+                                @onclick="() => Increment(item)">
+                            +
+                        </button>
+                    </div>
+                </td>
+
+                <td>@((item.Product.Price * item.Amount).ToString("C"))</td>
             </tr>
+        }
+        </tbody>
+
+        <tfoot>
+        <tr>
+            <td colspan="3" class="text-end fw-bold">Total</td>
+            <td class="fw-bold">
+                @(_items.Sum(i => i.Product.Price * i.Amount).ToString("C"))
+            </td>
+        </tr>
         </tfoot>
     </table>
-    <button class="btn btn-primary btn-sm" @onclick="MakeCheckout" disabled="@(!_items.Any())">Checkout</button>
+
+    <button class="btn btn-primary btn-sm"
+            @onclick="MakeCheckout"
+            disabled="@(!_items.Any())">
+        Checkout
+    </button>
 }
 
 @if (_step == Step.SelectDelivery)
 {
     <p class="mb-2">Select delivery method:</p>
-    @foreach (var m in _items.SelectMany(l => l.Product.Seller.SupportedDeliveryMethods).DistinctBy(m => m.Id))
+
+    @foreach (var m in _items
+                  .SelectMany(l => l.Product.Seller.SupportedDeliveryMethods)
+                  .DistinctBy(m => m.Id))
     {
         <div class="form-check">
-            <input class="form-check-input" type="radio" name="delivery"
-                   id="dm_@m.Id"
-                   checked="@(_selectedMethod?.Id == m.Id)"
-                   @onchange="() => _selectedMethod = m" />
-            <label class="form-check-label" for="dm_@m.Id">
+            <input class="form-check-input"
+                   type="radio"
+                   name="delivery_method"
+                   id="@($"dm_{m.Id}")"
+                   checked="@(_selectedMethodId == m.Id)"
+                   @onchange="() => _selectedMethodId = m.Id" />
+
+            <label class="form-check-label"
+                   for="@($"dm_{m.Id}")">
                 @m.Name @(m.IsInStore ? "(In-store pickup)" : "(Delivery)")
             </label>
         </div>
     }
+
     <Alert Message="_alertMessage" />
-    <NavButtons OnContinue="@ConfirmDelivery" OnBack="() => _step = Step.Cart" />
+
+    <NavButtons OnContinue="@ConfirmDelivery"
+                OnBack="() => _step = Step.Cart" />
 }
 
 @if (_step == Step.PromptMethodChange)
 {
     <div class="alert alert-info py-2 px-3">
-        <strong>Not all sellers support "@_selectedMethod!.Name".</strong><br />
-        "@_suggestedMethod!.Name" is supported by every seller. Switch to it?
+        <strong>
+            Not all sellers support "@_selectedMethod!.Name".
+        </strong>
+        <br />
+        "@_suggestedMethod!.Name" is supported by every seller.
+        Switch to it?
     </div>
+
     <div class="d-flex gap-2">
-        <button class="btn btn-success btn-sm" @onclick="AcceptMethodChange">Yes, switch</button>
-        <button class="btn btn-outline-danger btn-sm" @onclick="RejectMethodChange">No</button>
+        <button class="btn btn-success btn-sm"
+                @onclick="AcceptMethodChange">
+            Yes, switch
+        </button>
+
+        <button class="btn btn-outline-danger btn-sm"
+                @onclick="RejectMethodChange">
+            No
+        </button>
     </div>
 }
 
 @if (_step == Step.SelectPickup)
 {
     <p class="mb-2">Select a pickup point for each seller:</p>
+
     @foreach (var group in _items.GroupBy(l => l.Product.Seller.Id))
     {
         var seller = group.First().Product.Seller;
-        <p class="mb-1 mt-2"><strong>@seller.CompanyName</strong></p>
+
+        <p class="mb-1 mt-2">
+            <strong>@seller.CompanyName</strong>
+        </p>
+
         @foreach (var pp in seller.PickupPoints)
         {
             <div class="form-check">
-                <input class="form-check-input" type="radio"
+                <input class="form-check-input"
+                       type="radio"
                        name="pickup_@seller.Id"
                        id="pp_@pp.Id"
                        checked="@(_selectedPickups.TryGetValue(seller.Id, out var sel) && sel.Id == pp.Id)"
-                       @onchange="() => _selectedPickups[seller.Id] = pp" />
-                <label class="form-check-label" for="pp_@pp.Id">@pp.Name</label>
+                       @onchange="(_) => _selectedPickups[seller.Id] = pp" />
+
+                <label class="form-check-label" for="pp_@pp.Id">
+                    @pp.Name
+                </label>
             </div>
         }
     }
+
     <Alert Message="_alertMessage" />
-    <NavButtons OnContinue="@ConfirmPickups" OnBack="() => _step = Step.SelectDelivery" ContinueLabel="Place Order" />
+
+    <NavButtons OnContinue="@ConfirmPickups"
+                OnBack="() => _step = Step.SelectDelivery"
+                ContinueLabel="Place Order" />
 }
 
 @if (_step == Step.SelectAddress)
 {
     <p class="mb-2">Select delivery address:</p>
+
     @foreach (var a in _addresses)
     {
         <div class="form-check">
-            <input class="form-check-input" type="radio" name="addr"
+            <input class="form-check-input"
+                   type="radio"
+                   name="addr"
                    id="addr_@a.Id"
                    checked="@(_selectedAddress?.Id == a.Id)"
-                   @onchange="() => _selectedAddress = a" />
-            <label class="form-check-label" for="addr_@a.Id">@a.Name</label>
+                   @onchange="(_) => _selectedAddress = a" />
+
+            <label class="form-check-label" for="addr_@a.Id">
+                @a.Name
+            </label>
         </div>
     }
+
     <Alert Message="_alertMessage" />
-    <NavButtons OnContinue="@ConfirmAddress" OnBack="() => _step = Step.SelectDelivery" ContinueLabel="Place Order" />
+
+    <NavButtons OnContinue="@ConfirmAddress"
+                OnBack="() => _step = Step.SelectDelivery"
+                ContinueLabel="Place Order" />
 }
 
 @code {
-    private enum Step { Cart, SelectDelivery, PromptMethodChange, SelectPickup, SelectAddress }
 
+    private enum Step
+    {
+        Cart,
+        SelectDelivery,
+        PromptMethodChange,
+        SelectPickup,
+        SelectAddress
+    }
+
+    private Guid _selectedMethodId = Guid.Empty;
     private List<CartItem> _items = [];
+    private List<ProductDto> _products = [];
     private List<LocationDto> _addresses = [];
+
     private Dictionary<Guid, LocationDto> _selectedPickups = new();
+
     private Step _step = Step.Cart;
+
     private DeliveryMethodDto? _selectedMethod;
     private DeliveryMethodDto? _suggestedMethod;
     private LocationDto? _selectedAddress;
+
     private string? _alertMessage;
 
     protected override async Task OnInitializedAsync()
     {
+        _products = [.. await ProductFetcher.GetAllProductsAsync(new PaginationDto())];
         _items = await Cart.GetCartAsync();
         _addresses = await Locations.GetAllUserLocations();
     }
@@ -150,20 +235,33 @@
         _selectedMethod = null;
         _alertMessage = null;
         _step = Step.SelectDelivery;
+        _selectedMethodId = Guid.Empty;
     }
 
-    private void ConfirmDelivery()
+    private async Task ConfirmDelivery()
     {
         _alertMessage = null;
 
-        if (_selectedMethod == null)
+        _selectedMethod = _items
+            .SelectMany(l => l.Product.Seller.SupportedDeliveryMethods)
+            .DistinctBy(m => m.Id)
+            .FirstOrDefault(m => m.Id == _selectedMethodId);
+
+        if (_selectedMethod == null || _selectedMethodId == Guid.Empty)
         {
             _alertMessage = "Please select a delivery method.";
             return;
         }
 
-        var allSellers = _items.Select(l => l.Product.Seller).ToList();
-        bool allSupport = allSellers.All(s => s.SupportedDeliveryMethods.Any(m => m.Id == _selectedMethod.Id));
+        var allSellers = _items
+            .Select(l => l.Product.Seller)
+            .ToList();
+
+        bool allSupport = allSellers.All(
+            s => s.SupportedDeliveryMethods.Any(
+                m => m.Id == _selectedMethod.Id
+            )
+        );
 
         if (allSupport)
         {
@@ -174,31 +272,42 @@
         _suggestedMethod = _items
             .SelectMany(l => l.Product.Seller.SupportedDeliveryMethods)
             .DistinctBy(m => m.Id)
-            .FirstOrDefault(m => m.Id != _selectedMethod.Id &&
-                                 allSellers.All(s => s.SupportedDeliveryMethods.Any(x => x.Id == m.Id)));
+            .FirstOrDefault(m =>
+                m.Id != _selectedMethod.Id &&
+                allSellers.All(s =>
+                    s.SupportedDeliveryMethods.Any(x => x.Id == m.Id)
+                )
+            );
 
         if (_suggestedMethod != null)
+        {
             _step = Step.PromptMethodChange;
+        }
         else
-            _ = EndAsync("No delivery method is supported by every seller. Please order separately.");
+        {
+            _ = EndAsync(
+                "No delivery method is supported by every seller. Please order separately."
+            );
+        }
     }
 
     private void AcceptMethodChange()
     {
         _selectedMethod = _suggestedMethod;
         _suggestedMethod = null;
+
         ProceedAfterDelivery();
     }
 
     private void RejectMethodChange()
     {
-        _suggestedMethod = null;
         _ = EndAsync("Please order separately.");
     }
 
     private void ProceedAfterDelivery()
     {
         _alertMessage = null;
+
         if (_selectedMethod!.IsInStore)
         {
             _selectedPickups = new();
@@ -214,6 +323,7 @@
     private async Task ConfirmPickups()
     {
         _alertMessage = null;
+
         var missing = _items
             .Select(c => c.Product.Seller)
             .DistinctBy(s => s.Id)
@@ -223,7 +333,9 @@
 
         if (missing.Count > 0)
         {
-            _alertMessage = $"Please select a pickup point for: {string.Join(", ", missing)}.";
+            _alertMessage =
+                $"Please select a pickup point for: {string.Join(", ", missing)}.";
+
             return;
         }
 
@@ -233,6 +345,7 @@
     private async Task ConfirmAddress()
     {
         _alertMessage = null;
+
         if (_selectedAddress == null)
         {
             _alertMessage = "Please select a delivery address.";
@@ -246,40 +359,57 @@
     {
         try
         {
-            await OrderFetcher.CreateOrderAsync(new CreateOrderDto
-            {
-                Location = _selectedAddress,
-                DeliveryMethodId = _selectedMethod!.Id,
-                Purchases = _items.Select(i => new PurchaseDto
+            await OrderFetcher.CreateOrderAsync(
+                new CreateOrderDto
                 {
-                    ListingId = i.Product.Id,
-                    Amount = i.Amount
-                }).ToList()
-            });
+                    Location = _selectedAddress,
+                    Pickups = _selectedPickups,
+                    DeliveryMethodId = _selectedMethod!.Id,
+                    Purchases = _items.Select(i => new PurchaseDto
+                    {
+                        ListingId = i.Product.Id,
+                        Amount = i.Amount
+                    }).ToList()
+                }
+            );
 
             await Cart.ClearCart();
-            await StatusService.SetStatusAsync("Order placed! Waiting to be fulfilled.", StatusService.StatusType.Success);
+
+            await StatusService.SetStatusAsync(
+                "Order placed! Waiting to be fulfilled.",
+                StatusService.StatusType.Success
+            );
+
             Reset();
         }
         catch (Exception)
         {
-            await StatusService.SetStatusAsync("Failed to place order. Please try again.", StatusService.StatusType.Error);
+            await StatusService.SetStatusAsync(
+                "Failed to place order. Please try again.",
+                StatusService.StatusType.Error
+            );
         }
     }
 
     private async Task EndAsync(string message)
     {
-        await StatusService.SetStatusAsync(message, StatusService.StatusType.Warning);
-        Reset();
+        await StatusService.SetStatusAsync(
+            message,
+            StatusService.StatusType.Warning
+        );
     }
 
     private void Reset()
     {
+        _selectedMethodId = Guid.Empty;
         _step = Step.Cart;
+
         _selectedMethod = null;
         _suggestedMethod = null;
         _selectedAddress = null;
+
         _selectedPickups = new();
+
         _alertMessage = null;
     }
 }

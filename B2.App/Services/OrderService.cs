@@ -1,5 +1,6 @@
 using B2.App.Dtos;
 using B2.App.Exceptions;
+using B2.Data.DbContext;
 using B2.Data.Models;
 using B2.Data.Repositories;
 using Microsoft.Extensions.Configuration;
@@ -12,6 +13,7 @@ public class OrderService(
     ILocationRepository locations, 
     IListingRepository listings, 
     IDeliveryMethodRepository delivery, 
+    IUnitOfWork uow,
     IConfiguration cfg) : IOrderService
 {
     public async Task CreateOrderAsync(CreateOrderDto dto)
@@ -34,8 +36,8 @@ public class OrderService(
                 };
             })
         ];
-
-        var location = await locations.GetLocationByIdAsync(dto.Location.Id) 
+        
+        var location = dto.Location == null ? null : await locations.GetLocationByIdAsync(dto.Location.Id) 
             ?? throw new BadRequestException($"No such location {dto.Location.Address}");
         
         var model = new Order
@@ -46,7 +48,9 @@ public class OrderService(
             DeliveryMethod = del,
             Purchases = purchases,
             Location = location,
+            Pickups = [.. dto.Pickups.Values.Select(v => locations.GetLocationByIdAsync(v.Id).GetAwaiter().GetResult())],
         };
         await repo.AddOrderAsync(model);
+        await uow.SaveChangesAsync();
     }
 }
