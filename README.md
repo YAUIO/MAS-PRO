@@ -9,7 +9,7 @@
 | **Course**           | Modeling and Analysis of Systems (MAS) |
 | **Type**             | University Project                     |
 | **Primary Language** | C#                                     |
-| **Frontend**         | HTML / CSS                             |
+| **Frontend**         | HTML / CSS / Blazor                    |
 | **Status**           | Active Development                     |
 | **Author**           | Artiom Bezkorovainyi (s30174)          |
 
