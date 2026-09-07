@@ -11,7 +11,7 @@
 | **Primary Language** | C#                                     |
 | **Frontend**         | HTML / CSS / Blazor                    |
 | **Status**           | Done                                   |
-| **Author**           | Artiom Bezkorovainyi (s30174)          |
+| **Author**           | Artiom Bezkorovainyi                   |
 
 ## 📐 UML Requirements
 
@@ -109,10 +109,6 @@ The documentation covers the project's:
 
 **Artiom Bezkorovainyi**
 University Project
-
-## 📄 License
-
-This project was created as a university assignment. Its use and distribution are subject to the applicable university/course policies.
 
 ## 📝 Notes
 
