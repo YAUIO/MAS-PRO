@@ -10,7 +10,7 @@
 | **Type**             | University Project                     |
 | **Primary Language** | C#                                     |
 | **Frontend**         | HTML / CSS / Blazor                    |
-| **Status**           | Active Development                     |
+| **Status**           | Done                                   |
 | **Author**           | Artiom Bezkorovainyi (s30174)          |
 
 ## 📐 UML Requirements
