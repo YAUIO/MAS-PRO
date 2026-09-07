@@ -50,6 +50,8 @@ The project emphasizes:
 * **HTML** — frontend markup
 * **CSS** — frontend styling
 * **.NET** — application framework/runtime
+* **Blazor** - Frontend framework
+* **EF** - ORM
 
 ## 🚀 Getting Started
 
@@ -106,7 +108,7 @@ The documentation covers the project's:
 ## 👤 Author
 
 **Artiom Bezkorovainyi**
-University Project — **s30174**
+University Project
 
 ## 📄 License
 
